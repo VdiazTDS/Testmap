@@ -338,6 +338,31 @@ function showRouteSummary(rows) {
     box.textContent = "No summary data found";
     return;
   }
+
+  // Detect columns from first row
+  const sample = rows[0];
+
+  const routeCol = findColumn(sample, ["route"]);
+  const stopsCol = findColumn(sample, ["stop", "seq", "count"]);
+  const distCol  = findColumn(sample, ["dist", "mile"]);
+  const timeCol  = findColumn(sample, ["time", "hour", "total"]);
+
+  rows.forEach(r => {
+    const div = document.createElement("div");
+    div.style.marginBottom = "10px";
+
+    div.innerHTML = `
+      <strong>${routeCol ? `Route ${r[routeCol]}` : "Route"}</strong><br>
+      Stops: ${stopsCol ? r[stopsCol] : "-"}<br>
+      Distance: ${distCol ? r[distCol] : "-"}<br>
+      Total Time: ${timeCol ? r[timeCol] : "-"}
+    `;
+
+    box.appendChild(div);
+  });
+}
+
+
 async function loadSummaryFor(routeFileName) {
   const { data, error } = await sb.storage.from(BUCKET).list();
   if (error) return;
@@ -367,49 +392,6 @@ async function loadSummaryFor(routeFileName) {
   }
 }
 
-  // Detect columns from first row
-  const sample = rows[0];
 
-  const routeCol    = findColumn(sample, ["route"]);
-  const stopsCol    = findColumn(sample, ["stop", "seq", "count"]);
-  const distCol     = findColumn(sample, ["dist", "mile"]);
-  const timeCol     = findColumn(sample, ["time", "hour", "total"]);
-
-  rows.forEach(r => {
-    const div = document.createElement("div");
-    div.style.marginBottom = "10px";
-
-    div.innerHTML = `
-      <strong>${routeCol ? `Route ${r[routeCol]}` : "Route"}</strong><br>
-      Stops: ${stopsCol ? r[stopsCol] : "-"}<br>
-      Distance: ${distCol ? r[distCol] : "-"}<br>
-      Total Time: ${timeCol ? r[timeCol] : "-"}
-    `;
-
-    box.appendChild(div);
-  });
-}
-
-
-
-
-  const { data } = sb.storage.from(BUCKET).getPublicUrl(summaryName);
-
-  try {
-    const r = await fetch(data.publicUrl);
-    if (!r.ok) throw new Error("No summary");
-
-    const wb = XLSX.read(new Uint8Array(await r.arrayBuffer()), { type: "array" });
-    const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
-
-    showRouteSummary(rows);
-  } catch {
-    document.getElementById("routeSummary").textContent = "No summary available";
-  }
-}
-
-
-
-
-
+// Start app
 listFiles();
