@@ -1,14 +1,16 @@
-
 // ================= SUPABASE CONFIG =================
+// Connection info for cloud file storage
 const SUPABASE_URL = "https://lffazhbwvorwxineklsy.supabase.co";
 const SUPABASE_KEY = "sb_publishable_Lfh2zlIiTSMB0U-Fe5o6Jg_mJ1qkznh";
 const BUCKET = "excel-files";
 
+// Create Supabase client
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-//========
 
-
+// ================= FILE NAME MATCHING =================
+// Makes route files and route summary files match even if
+// spacing, punctuation, or "RouteSummary" text is different.
 function normalizeName(name) {
   return name
     .toLowerCase()
@@ -19,13 +21,11 @@ function normalizeName(name) {
 }
 
 
-
-
-
-
-// ================= MAP =================
+// ================= MAP SETUP =================
+// Create Leaflet map
 const map = L.map("map").setView([0, 0], 2);
 
+// Base map layers
 const baseMaps = {
   streets: L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"),
   satellite: L.tileLayer(
@@ -33,26 +33,33 @@ const baseMaps = {
   )
 };
 
+// Default map
 baseMaps.streets.addTo(map);
 
+// Dropdown to switch map type
 document.getElementById("baseMapSelect").addEventListener("change", e => {
   Object.values(baseMaps).forEach(l => map.removeLayer(l));
   baseMaps[e.target.value].addTo(map);
 });
 
 
-// ================= DATA =================
+// ================= MAP SYMBOL SETTINGS =================
 const colors = ["#e74c3c","#3498db","#2ecc71","#f39c12","#9b59b6","#1abc9c"];
 const shapes = ["circle","square","triangle","diamond"];
-const symbolMap = {};
-const routeDayGroups = {};
-let symbolIndex = 0;
-let globalBounds = L.latLngBounds();
 
+const symbolMap = {};        // stores symbol for each route/day combo
+const routeDayGroups = {};   // stores map markers grouped by route/day
+let symbolIndex = 0;
+let globalBounds = L.latLngBounds(); // used to zoom map to all points
+
+
+// Convert day number → day name
 function dayName(n) {
   return ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"][n-1];
 }
 
+
+// Assign a unique color/shape to each route/day
 function getSymbol(key) {
   if (!symbolMap[key]) {
     symbolMap[key] = {
@@ -64,7 +71,11 @@ function getSymbol(key) {
   return symbolMap[key];
 }
 
+
+// Create marker with correct shape
 function createMarker(lat, lon, symbol) {
+
+  // Circle marker
   if (symbol.shape === "circle") {
     return L.circleMarker([lat, lon], {
       radius: 5,
@@ -74,11 +85,15 @@ function createMarker(lat, lon, symbol) {
     });
   }
 
+  // Custom HTML shapes
   let html = "";
+
   if (symbol.shape === "square")
     html = `<div style="width:10px;height:10px;background:${symbol.color}"></div>`;
+
   if (symbol.shape === "triangle")
     html = `<div style="width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-bottom:10px solid ${symbol.color}"></div>`;
+
   if (symbol.shape === "diamond")
     html = `<div style="width:10px;height:10px;background:${symbol.color};transform:rotate(45deg)"></div>`;
 
@@ -86,10 +101,11 @@ function createMarker(lat, lon, symbol) {
 }
 
 
-// ================= FILTER UI =================
+// ================= FILTER CHECKBOX UI =================
 function buildRouteCheckboxes(routes) {
   const c = document.getElementById("routeCheckboxes");
   c.innerHTML = "";
+
   routes.forEach(r => {
     const l = document.createElement("label");
     l.innerHTML = `<input type="checkbox" value="${r}" checked> ${r}`;
@@ -101,6 +117,7 @@ function buildRouteCheckboxes(routes) {
 function buildDayCheckboxes() {
   const c = document.getElementById("dayCheckboxes");
   c.innerHTML = "";
+
   [1,2,3,4,5,6,7].forEach(d => {
     const l = document.createElement("label");
     l.innerHTML = `<input type="checkbox" value="${d}" checked> ${dayName(d)}`;
@@ -110,6 +127,8 @@ function buildDayCheckboxes() {
 }
 buildDayCheckboxes();
 
+
+// Select/Deselect all checkboxes
 function setCheckboxGroup(containerId, checked) {
   document.querySelectorAll(`#${containerId} input`).forEach(b => (b.checked = checked));
   applyFilters();
@@ -121,7 +140,7 @@ document.getElementById("daysAll").onclick    = () => setCheckboxGroup("dayCheck
 document.getElementById("daysNone").onclick   = () => setCheckboxGroup("dayCheckboxes", false);
 
 
-// ================= FILTER =================
+// ================= APPLY MAP FILTERS =================
 function applyFilters() {
   const routes = [...document.querySelectorAll("#routeCheckboxes input:checked")].map(i => i.value);
   const days   = [...document.querySelectorAll("#dayCheckboxes input:checked")].map(i => i.value);
@@ -136,7 +155,7 @@ function applyFilters() {
 }
 
 
-// ================= STATS =================
+// ================= ROUTE STATISTICS =================
 function updateStats() {
   const list = document.getElementById("statsList");
   list.innerHTML = "";
@@ -153,11 +172,12 @@ function updateStats() {
 }
 
 
-// ================= EXCEL PROCESS =================
+// ================= PROCESS ROUTE EXCEL =================
 function processExcelBuffer(buffer) {
   const wb = XLSX.read(new Uint8Array(buffer), { type: "array" });
   const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
 
+  // Clear previous map data
   Object.values(routeDayGroups).forEach(g => g.layers.forEach(l => map.removeLayer(l)));
   Object.keys(routeDayGroups).forEach(k => delete routeDayGroups[k]);
   Object.keys(symbolMap).forEach(k => delete symbolMap[k]);
@@ -166,11 +186,13 @@ function processExcelBuffer(buffer) {
 
   const routeSet = new Set();
 
+  // Create markers
   rows.forEach(row => {
     const lat = Number(row.LATITUDE);
     const lon = Number(row.LONGITUDE);
     const route = String(row.NEWROUTE);
     const day = String(row.NEWDAY);
+
     if (!lat || !lon || !route || !day) return;
 
     const key = `${route}|${day}`;
@@ -193,7 +215,7 @@ function processExcelBuffer(buffer) {
 }
 
 
-// ================= SUPABASE FILE LIST =================
+// ================= LIST FILES FROM CLOUD =================
 async function listFiles() {
   const { data, error } = await sb.storage.from(BUCKET).list();
   if (error) return console.error(error);
@@ -204,7 +226,7 @@ async function listFiles() {
   const routeFiles = {};
   const summaryFiles = {};
 
-  // Categorize files
+  // Separate route files and summary files
   data.forEach(file => {
     const name = file.name.toLowerCase();
 
@@ -215,14 +237,14 @@ async function listFiles() {
     }
   });
 
-  // Build UI rows
+  // Build UI
   Object.keys(routeFiles).forEach(key => {
     const routeName = routeFiles[key];
     const summaryName = summaryFiles[key];
 
     const li = document.createElement("li");
 
-    // OPEN MAP BUTTON
+    // OPEN MAP
     const openBtn = document.createElement("button");
     openBtn.textContent = "Open Map";
 
@@ -231,24 +253,21 @@ async function listFiles() {
       const r = await fetch(data.publicUrl);
       processExcelBuffer(await r.arrayBuffer());
 
-      // Load matching summary if it exists
       loadSummaryFor(routeName);
     };
 
     li.appendChild(openBtn);
 
-    // SUMMARY BUTTON (optional)
+    // SUMMARY BUTTON
     if (summaryName) {
       const summaryBtn = document.createElement("button");
       summaryBtn.textContent = "Summary";
       summaryBtn.style.marginLeft = "5px";
-
       summaryBtn.onclick = () => loadSummaryFor(routeName);
-
       li.appendChild(summaryBtn);
     }
 
-    // DELETE BUTTON
+    // DELETE
     const delBtn = document.createElement("button");
     delBtn.textContent = "Delete";
     delBtn.style.marginLeft = "5px";
@@ -262,22 +281,17 @@ async function listFiles() {
     };
 
     li.appendChild(delBtn);
-
     li.appendChild(document.createTextNode(" " + routeName));
     ul.appendChild(li);
   });
 }
 
 
-
-// ================= UPLOAD =================
+// ================= UPLOAD FILE =================
 async function uploadFile(file) {
   if (!file) return;
 
-  const { error } = await sb
-    .storage
-    .from(BUCKET)
-    .upload(file.name, file, { upsert: true });
+  const { error } = await sb.storage.from(BUCKET).upload(file.name, file, { upsert: true });
 
   if (error) {
     console.error("UPLOAD ERROR:", error);
@@ -290,54 +304,11 @@ async function uploadFile(file) {
 }
 
 
-// ================= INPUT =================
-const dropZone = document.getElementById("dropZone");
-const fileInput = document.createElement("input");
-fileInput.type = "file";
-fileInput.accept = ".xlsx,.xls";
-
-dropZone.onclick = () => fileInput.click();
-dropZone.ondragover = e => e.preventDefault();
-dropZone.ondrop = e => {
-  e.preventDefault();
-  uploadFile(e.dataTransfer.files[0]);
-};
-
-fileInput.onchange = e => uploadFile(e.target.files[0]);
-
-
-// ================= SIDEBAR / MOBILE =================
-const mobileMenuBtn = document.getElementById("mobileMenuBtn");
-const toggleSidebarBtn = document.getElementById("toggleSidebarBtn");
-const sidebar = document.querySelector(".sidebar");
-
-mobileMenuBtn.onclick = () => {
-  const isOpen = sidebar.classList.toggle("open");
-  mobileMenuBtn.textContent = isOpen ? "✕" : "☰";
-  setTimeout(() => map.invalidateSize(), 200);
-};
-
-toggleSidebarBtn.onclick = () => {
-  if (window.innerWidth <= 900) {
-    sidebar.classList.toggle("open");
-  } else {
-    document.querySelector(".app-container").classList.toggle("collapsed");
-    toggleSidebarBtn.textContent =
-      document.querySelector(".app-container").classList.contains("collapsed") ? "▶" : "◀";
-  }
-  setTimeout(() => map.invalidateSize(), 200);
-};
-
+// ================= ROUTE SUMMARY DISPLAY =================
 function findColumn(row, keywords) {
-  const keys = Object.keys(row);
-
-  for (const k of keys) {
-    const lower = k.toLowerCase();
-    if (keywords.some(word => lower.includes(word))) {
-      return k;
-    }
-  }
-  return null;
+  return Object.keys(row).find(k =>
+    keywords.some(word => k.toLowerCase().includes(word))
+  );
 }
 
 function showRouteSummary(rows) {
@@ -349,7 +320,6 @@ function showRouteSummary(rows) {
     return;
   }
 
-  // Detect columns from first row
   const sample = rows[0];
 
   const routeCol = findColumn(sample, ["route"]);
@@ -373,6 +343,7 @@ function showRouteSummary(rows) {
 }
 
 
+// Load matching summary file
 async function loadSummaryFor(routeFileName) {
   const { data, error } = await sb.storage.from(BUCKET).list();
   if (error) return;
@@ -399,6 +370,5 @@ async function loadSummaryFor(routeFileName) {
 }
 
 
-
-// Start app
+// ================= START APP =================
 listFiles();
