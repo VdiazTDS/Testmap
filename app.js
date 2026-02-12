@@ -6,6 +6,21 @@ const BUCKET = "excel-files";
 
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+//========
+
+
+function normalizeName(name) {
+  return name
+    .toLowerCase()
+    .replace("route summary", "")
+    .replace(/\s+/g, "")
+    .replace(".xlsx", "")
+    .trim();
+}
+
+
+
+
 
 // ================= MAP =================
 const map = L.map("map").setView([0, 0], 2);
@@ -185,25 +200,73 @@ async function listFiles() {
   const ul = document.getElementById("savedFiles");
   ul.innerHTML = "";
 
+  const routeFiles = {};
+  const summaryFiles = {};
+
+  // Categorize files
   data.forEach(file => {
+    const name = file.name.toLowerCase();
+
+    if (name.includes("route summary")) {
+      summaryFiles[normalizeName(name)] = file.name;
+    } else {
+      routeFiles[normalizeName(name)] = file.name;
+    }
+  });
+
+  // Build UI rows
+  Object.keys(routeFiles).forEach(key => {
+    const routeName = routeFiles[key];
+    const summaryName = summaryFiles[key];
+
     const li = document.createElement("li");
 
+    // OPEN MAP
     const openBtn = document.createElement("button");
-    openBtn.textContent = "Open";
+    openBtn.textContent = "Open Map";
     openBtn.onclick = async () => {
-      const { data } = sb.storage.from(BUCKET).getPublicUrl(file.name);
+      const { data } = sb.storage.from(BUCKET).getPublicUrl(routeName);
       const r = await fetch(data.publicUrl);
       processExcelBuffer(await r.arrayBuffer());
     };
 
+    li.appendChild(openBtn);
+
+    // OPEN SUMMARY (if exists)
+    if (summaryName) {
+      const summaryBtn = document.createElement("button");
+      summaryBtn.textContent = "Summary";
+      summaryBtn.style.marginLeft = "5px";
+
+      summaryBtn.onclick = async () => {
+        const { data } = sb.storage.from(BUCKET).getPublicUrl(summaryName);
+        const r = await fetch(data.publicUrl);
+
+        const wb = XLSX.read(await r.arrayBuffer(), { type: "array" });
+        const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
+
+        showRouteSummary(rows);
+      };
+
+      li.appendChild(summaryBtn);
+    }
+
+    // DELETE (removes both if present)
     const delBtn = document.createElement("button");
     delBtn.textContent = "Delete";
+    delBtn.style.marginLeft = "5px";
+
     delBtn.onclick = async () => {
-      await sb.storage.from(BUCKET).remove([file.name]);
+      const toDelete = [routeName];
+      if (summaryName) toDelete.push(summaryName);
+
+      await sb.storage.from(BUCKET).remove(toDelete);
       listFiles();
     };
 
-    li.append(openBtn, delBtn, document.createTextNode(" " + file.name));
+    li.appendChild(delBtn);
+
+    li.appendChild(document.createTextNode(" " + routeName));
     ul.appendChild(li);
   });
 }
