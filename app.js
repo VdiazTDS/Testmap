@@ -258,26 +258,50 @@ toggleSidebarBtn.onclick = () => {
   setTimeout(() => map.invalidateSize(), 200);
 };
 
+function findColumn(row, keywords) {
+  const keys = Object.keys(row);
+
+  for (const k of keys) {
+    const lower = k.toLowerCase();
+    if (keywords.some(word => lower.includes(word))) {
+      return k;
+    }
+  }
+  return null;
+}
+
 function showRouteSummary(rows) {
   const box = document.getElementById("routeSummary");
   box.innerHTML = "";
 
-  rows.forEach(r => {
-    if (!r["Route ID"]) return;
+  if (!rows.length) {
+    box.textContent = "No summary data found";
+    return;
+  }
 
+  // Detect columns from first row
+  const sample = rows[0];
+
+  const routeCol    = findColumn(sample, ["route"]);
+  const stopsCol    = findColumn(sample, ["stop", "seq", "count"]);
+  const distCol     = findColumn(sample, ["dist", "mile"]);
+  const timeCol     = findColumn(sample, ["time", "hour", "total"]);
+
+  rows.forEach(r => {
     const div = document.createElement("div");
-    div.style.marginBottom = "8px";
+    div.style.marginBottom = "10px";
 
     div.innerHTML = `
-      <strong>Route ${r["Route ID"]}</strong><br>
-      Stops: ${r["Seq"] || "-"}<br>
-      Distance: ${r["Distance"] || "-"} miles<br>
-      Total Time: ${r["Total"] || "-"}
+      <strong>${routeCol ? `Route ${r[routeCol]}` : "Route"}</strong><br>
+      Stops: ${stopsCol ? r[stopsCol] : "-"}<br>
+      Distance: ${distCol ? r[distCol] : "-"}<br>
+      Total Time: ${timeCol ? r[timeCol] : "-"}
     `;
 
     box.appendChild(div);
   });
 }
+
 
 async function loadSummaryFor(fileName) {
   const summaryName = fileName.replace(".xlsx", "_summary.xlsx");
