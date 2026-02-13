@@ -327,13 +327,52 @@ function findColumn(row, keywords) {
 }
 
 function showRouteSummary(rows) {
+  const panel = document.getElementById("summaryPanel");
   const box = document.getElementById("routeSummary");
+
   box.innerHTML = "";
 
   if (!rows || !rows.length) {
     box.textContent = "No summary data found";
+    panel.classList.remove("hidden");
     return;
   }
+
+  const table = document.createElement("table");
+
+  const thead = document.createElement("thead");
+  const tbody = document.createElement("tbody");
+
+  const columns = Object.keys(rows[0]);
+
+  const headerRow = document.createElement("tr");
+  columns.forEach(col => {
+    const th = document.createElement("th");
+    th.textContent = col;
+    headerRow.appendChild(th);
+  });
+  thead.appendChild(headerRow);
+
+  rows.forEach(r => {
+    const tr = document.createElement("tr");
+
+    columns.forEach(col => {
+      const td = document.createElement("td");
+      td.textContent = r[col] ?? "";
+      tr.appendChild(td);
+    });
+
+    tbody.appendChild(tr);
+  });
+
+  table.appendChild(thead);
+  table.appendChild(tbody);
+  box.appendChild(table);
+
+  // OPEN PANEL
+  panel.classList.remove("hidden");
+}
+
 
   // ===== CREATE TABLE =====
   const table = document.createElement("table");
@@ -450,7 +489,15 @@ function initApp() {
       setTimeout(() => map.invalidateSize(), 200);
     });
   }
+//========
 
+document.getElementById("closeSummary").onclick = () => {
+  document.getElementById("summaryPanel").classList.add("hidden");
+};
+
+
+
+  
   // ===== INITIAL DATA LOAD =====
   listFiles();
 }
