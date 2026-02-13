@@ -682,11 +682,16 @@ dropZone.addEventListener("drop", e => {
     });
 
     document.addEventListener("mouseup", () => {
-      if (!isDragging) return;
-      isDragging = false;
-      document.body.style.userSelect = "";
-      localStorage.setItem("summaryHeight", panel.offsetHeight);
-    });
+  if (!isDragging) return;
+  isDragging = false;
+  document.body.style.userSelect = "";
+  localStorage.setItem("summaryHeight", panel.offsetHeight);
+
+  // Hide resize hint after first drag
+  const hint = document.querySelector(".resize-hint");
+  if (hint) hint.style.display = "none";
+});
+
 
     // Collapse toggle
 if (toggleBtn) {
