@@ -541,6 +541,41 @@ if (panel && header) {
     
   }
 //========
+// ===== POP-OUT ROUTE SUMMARY WINDOW =====
+const popoutBtn = document.getElementById("popoutSummaryBtn");
+
+if (popoutBtn) {
+  popoutBtn.onclick = () => {
+    const tableHTML = document.getElementById("routeSummaryTable")?.innerHTML;
+
+    if (!tableHTML || tableHTML.includes("No summary")) {
+      alert("No route summary loaded.");
+      return;
+    }
+
+    const win = window.open("", "_blank", "width=900,height=600,resizable=yes,scrollbars=yes");
+
+    win.document.write(`
+      <html>
+        <head>
+          <title>Route Summary</title>
+          <style>
+            body { font-family: Roboto, sans-serif; margin: 10px; }
+            table { border-collapse: collapse; width: 100%; }
+            th, td { border: 1px solid #ccc; padding: 6px; text-align: left; }
+            th { background: #f4f4f4; position: sticky; top: 0; }
+          </style>
+        </head>
+        <body>
+          <h2>Route Summary</h2>
+          ${tableHTML}
+        </body>
+      </html>
+    `);
+
+    win.document.close();
+  };
+}
 
 
   
