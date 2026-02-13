@@ -121,7 +121,23 @@ function updateSelectionCount() {
 
 
 //========================
-document.getElementById("clearSelectionBtn").onclick = () => {
+const clearBtn = document.getElementById("clearSelectionBtn");
+
+if (clearBtn) {
+  clearBtn.onclick = () => {
+    drawnLayer.clearLayers();
+
+    Object.entries(routeDayGroups).forEach(([key, group]) => {
+      const sym = symbolMap[key];
+      group.layers.forEach(marker => {
+        marker.setStyle?.({ color: sym.color, fillColor: sym.color });
+      });
+    });
+
+    document.getElementById("selectionCount").textContent = 0;
+  };
+}
+
   // Remove any drawn polygons
   drawnLayer.clearLayers();
 
