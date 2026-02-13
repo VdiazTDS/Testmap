@@ -382,19 +382,30 @@ function showRouteSummary(rows) {
 // Load matching summary file
 async function loadSummaryFor(routeFileName) {
   const { data, error } = await sb.storage.from(BUCKET).list();
-  if (error) return;
+  if (error) {
+    console.error("LIST ERROR:", error);
+    return;
+  }
+
+  console.log("ALL FILES:", data.map(f => f.name));
+  console.log("ROUTE FILE CLICKED:", routeFileName);
 
   const normalizedRoute = normalizeName(routeFileName);
+  console.log("NORMALIZED ROUTE:", normalizedRoute);
 
   const summary = data.find(f => {
     const lower = f.name.toLowerCase();
     const normalizedSummary = normalizeName(f.name);
+
+    console.log("CHECKING:", f.name, "→", normalizedSummary);
 
     return (
       lower.includes("routesummary") ||
       lower.includes("route summary")
     ) && normalizedSummary === normalizedRoute;
   });
+
+  console.log("FOUND SUMMARY:", summary);
 
   if (!summary) {
     document.getElementById("routeSummary").textContent = "No summary available";
