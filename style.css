@@ -432,14 +432,17 @@ header p {
 .bottom-summary-header {
   height: 40px;
   background: #2a2a2a;
+
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: 8px;              /* spacing between buttons */
+
   padding: 0 12px;
   cursor: ns-resize;
   user-select: none;
   border-bottom: 1px solid #444;
 }
+
 
 /* CONTENT AREA */
 .bottom-summary-content {
@@ -572,6 +575,7 @@ header p {
   font-weight: 600;
   color: #fff;
 }
+
 
 /* ===== Modern action button ===== */
 /* ===== Modern primary action button ===== */
