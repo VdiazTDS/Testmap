@@ -748,32 +748,48 @@ if (toggleBtn) {
   }
 //======
 
-// ===== RESET MAP BUTTON =====
+// ===== RESET MAP BUTTON (FULL HARD RESET) =====
 const resetBtn = document.getElementById("resetMapBtn");
 
 resetBtn.addEventListener("click", () => {
   if (!map) return;
 
-  // Reset zoom & center
-  map.setView([39.5, -98.35], 4); // USA default — change if needed
+  // 1. Reset map view
+  map.setView([39.5, -98.35], 4); // change center if needed
 
-  // Clear polygon selection if it exists
+  // 2. Clear drawn polygon
   if (drawnItems) {
     drawnItems.clearLayers();
   }
 
-  // Unselect all stop markers
-  selectedStops.clear();
+  // 3. Remove ALL markers from map
+  if (allMarkers && allMarkers.length) {
+    allMarkers.forEach(marker => map.removeLayer(marker));
+    allMarkers = [];
+  }
 
-  // Reset marker colors
-  allMarkers.forEach(marker => {
-    marker.setStyle?.({ color: "#3388ff", fillColor: "#3388ff" });
-  });
+  // 4. Clear selected stops
+  if (selectedStops) {
+    selectedStops.clear();
+  }
 
-  // Reset counter UI
+  // 5. Reset counter UI
   const countEl = document.getElementById("selectionCount");
   if (countEl) countEl.textContent = "0";
+
+  // 6. Clear route/day checkboxes (optional but recommended)
+  document.querySelectorAll("#routeCheckboxes input, #dayCheckboxes input")
+    .forEach(cb => cb.checked = false);
+
+  // 7. Clear statistics panel
+  const stats = document.getElementById("statsList");
+  if (stats) stats.innerHTML = "";
+
+  // 8. Clear bottom summary table
+  const summary = document.getElementById("routeSummaryTable");
+  if (summary) summary.innerHTML = "No summary loaded";
 });
+
 
   
 
