@@ -530,20 +530,26 @@ function initApp() {
     });
 
     // Collapse toggle
-    if (toggleBtn) {
-      toggleBtn.onclick = () => {
-        panel.classList.toggle("collapsed");
+if (toggleBtn) {
+  toggleBtn.onclick = () => {
+    const isCollapsed = panel.classList.toggle("collapsed");
 
-        if (panel.classList.contains("collapsed")) {
-          panel.style.height = "40px";
-          toggleBtn.textContent = "▲";
-        } else {
-          const restored = localStorage.getItem("summaryHeight") || 250;
-          panel.style.height = restored + "px";
-          toggleBtn.textContent = "▼";
-        }
-      };
+    if (isCollapsed) {
+      // Save current height before collapsing
+      localStorage.setItem("summaryHeight", panel.offsetHeight);
+
+      panel.style.height = "40px";
+      toggleBtn.textContent = "▲";
+    } else {
+      // Restore saved height OR default
+      const restored = localStorage.getItem("summaryHeight");
+
+      panel.style.height = (restored && restored > 60 ? restored : 250) + "px";
+      toggleBtn.textContent = "▼";
     }
+  };
+}
+
   }
 
   // ===== POP-OUT SUMMARY WINDOW =====
