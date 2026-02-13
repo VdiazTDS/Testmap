@@ -428,20 +428,7 @@ header p {
   z-index: 999;
 }
 
-/* HEADER — always visible */
-.bottom-summary-header {
-  height: 40px;
-  background: #2a2a2a;
 
-  display: flex;
-  align-items: center;
-  gap: 8px;              /* spacing between buttons */
-
-  padding: 0 12px;
-  cursor: ns-resize;
-  user-select: none;
-  border-bottom: 1px solid #444;
-}
 
 
 /* CONTENT AREA */
@@ -481,18 +468,7 @@ header p {
 
 
 
-/* header bar */
-.bottom-summary-header {
-  height: 40px;
-  background: #2a2a2a;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0 12px;
-  cursor: pointer;
-  font-weight: bold;
-  border-bottom: 1px solid #444;
-}
+
 
 /* toggle button */
 .bottom-summary-header button {
@@ -543,15 +519,7 @@ header p {
   z-index: 999;
 }
 
-.bottom-summary-header {
-  cursor: ns-resize;
-  background: #2a2a2a;
-  padding: 8px 12px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  user-select: none;
-}
+
 
 .bottom-summary-content {
   overflow: auto;
@@ -559,14 +527,6 @@ header p {
   padding: 10px;
 }
 /* ===== Bottom summary header layout ===== */
-.bottom-summary-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 8px 12px;
-  background: #1e1e1e;
-  border-top: 1px solid #333;
-}
 
 /* Title */
 .summary-title {
@@ -598,12 +558,7 @@ header p {
 /* Collapse arrow button */
 
 /* ===== FINAL HEADER LAYOUT FIX ===== */
-.bottom-summary-header {
-  display: grid !important;
-  grid-template-columns: auto 1fr auto;
-  align-items: center;
-  padding: 0 16px;
-}
+
 
 /* Keep title perfectly centered */
 .summary-title {
@@ -657,3 +612,31 @@ header p {
   transform: translateY(0);
   box-shadow: 0 2px 5px rgba(0,0,0,0.35);
 }
+
+
+/* ===== FINAL HEADER LAYOUT ===== */
+.bottom-summary-header {
+  height: 40px;
+  background: #2a2a2a;
+
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  padding: 0 16px;
+  border-bottom: 1px solid #444;
+}
+
+/* Center title */
+.summary-title {
+  flex: 1;
+  text-align: center;
+  font-weight: 600;
+  color: #fff;
+}
+
+/* Keep collapse arrow left and clear of Leaflet watermark */
+.collapse-btn {
+  margin-left: 6px;
+}
+
