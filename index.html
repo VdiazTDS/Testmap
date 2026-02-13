@@ -78,17 +78,20 @@
   </aside>
 
   <main class="map-container">
-    <!-- ROUTE SUMMARY PANEL -->
-<div id="summaryPanel" class="summary-panel hidden">
-  <div class="summary-header">
-    <strong>Route Summary</strong>
-    <button id="closeSummary">✕</button>
+<!-- ===== BOTTOM ROUTE SUMMARY PANEL ===== -->
+<div id="bottomSummary" class="bottom-summary collapsed">
+
+  <div class="bottom-summary-header" onclick="toggleSummary()">
+    <span>Route Summary</span>
+    <button id="summaryToggleBtn">▲</button>
   </div>
 
-  <div id="routeSummary" class="summary-content">
+  <div id="routeSummaryTable" class="bottom-summary-content">
     No summary loaded
   </div>
+
 </div>
+
 
     <div id="map"></div>
   </main>
