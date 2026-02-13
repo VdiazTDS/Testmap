@@ -328,14 +328,15 @@ function findColumn(row, keywords) {
 }
 
 function showRouteSummary(rows) {
-  const panel = document.getElementById("summaryPanel");
+  const panel = document.getElementById("bottomSummary");
   const box = document.getElementById("routeSummaryTable");
+
+  if (!panel || !box) return;
 
   box.innerHTML = "";
 
   if (!rows || !rows.length) {
     box.textContent = "No summary data found";
-    panel.classList.remove("hidden");
     return;
   }
 
@@ -346,6 +347,7 @@ function showRouteSummary(rows) {
 
   const columns = Object.keys(rows[0]);
 
+  // Header
   const headerRow = document.createElement("tr");
   columns.forEach(col => {
     const th = document.createElement("th");
@@ -354,6 +356,7 @@ function showRouteSummary(rows) {
   });
   thead.appendChild(headerRow);
 
+  // Rows
   rows.forEach(r => {
     const tr = document.createElement("tr");
 
@@ -370,10 +373,9 @@ function showRouteSummary(rows) {
   table.appendChild(tbody);
   box.appendChild(table);
 
-  // OPEN PANEL
-  panel.classList.remove("hidden");
+  // Open the bottom panel automatically
+  panel.classList.remove("collapsed");
 }
-
 
   
 
