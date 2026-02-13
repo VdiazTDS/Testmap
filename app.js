@@ -345,7 +345,14 @@ function showRouteSummary(rows) {
   const thead = document.createElement("thead");
   const tbody = document.createElement("tbody");
 
-  const columns = Object.keys(rows[0]);
+  // Get ALL unique columns from every row
+const columnSet = new Set();
+
+rows.forEach(r => {
+  Object.keys(r).forEach(col => columnSet.add(col));
+});
+
+const columns = Array.from(columnSet);
 
   // Header
   const headerRow = document.createElement("tr");
