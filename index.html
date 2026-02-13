@@ -85,13 +85,18 @@
 
 
 <!-- ===== BOTTOM ROUTE SUMMARY PANEL ===== -->
-<div id="bottomSummary" class="bottom-summary collapsed">
+<div class="bottom-summary-header">
 
-  <div class="bottom-summary-header" onclick="toggleSummary()">
-    <span>Route Summary</span>
-    <button id="popoutSummaryBtn">⧉ Open in New Window</button>
-    <button id="summaryToggleBtn">▲</button>
-  </div>
+  <button id="popoutSummaryBtn" class="modern-btn">
+    ⧉ Open in New Window
+  </button>
+
+  <span class="summary-title">Route Summary</span>
+
+  <button id="summaryToggleBtn" class="collapse-btn">▲</button>
+
+</div>
+
 
   <div id="routeSummaryTable" class="bottom-summary-content">
     No summary loaded
