@@ -329,7 +329,7 @@ function findColumn(row, keywords) {
 
 function showRouteSummary(rows) {
   const panel = document.getElementById("summaryPanel");
-  const box = document.getElementById("routeSummary");
+  const box = document.getElementById("routeSummaryTable");
 
   box.innerHTML = "";
 
@@ -408,7 +408,7 @@ async function loadSummaryFor(routeFileName) {
   console.log("FOUND SUMMARY:", summary);
 
   if (!summary) {
-    document.getElementById("routeSummary").textContent = "No summary available";
+    document.getElementById("routeSummaryTable").textContent = "No summary available";
     return;
   }
 
