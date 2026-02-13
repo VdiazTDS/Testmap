@@ -85,8 +85,9 @@ map.on(L.Draw.Event.CREATED, e => {
 // when polygon edited/deleted
 map.on(L.Draw.Event.EDITED, updateSelectionCount);
 map.on(L.Draw.Event.DELETED, () => {
-  document.getElementById("selectionCount").textContent = 0;
+  updateSelectionCount(); // resets colors + count
 });
+
 
 
 //===============
@@ -94,26 +95,22 @@ map.on(L.Draw.Event.DELETED, () => {
 
 function updateSelectionCount() {
   const polygon = drawnLayer.getLayers()[0];
-  if (!polygon) return;
 
   let count = 0;
 
-  Object.values(routeDayGroups).forEach(group => {
+  Object.entries(routeDayGroups).forEach(([key, group]) => {
+    const sym = symbolMap[key];
+
     group.layers.forEach(marker => {
       const latlng = marker.getLatLng();
 
-      if (polygon.getBounds().contains(latlng) && map.hasLayer(marker)) {
-        marker.setStyle?.({ color: "#ffff00", fillColor: "#ffff00" }); // highlight
+      // --- RESET marker to original color FIRST ---
+      marker.setStyle?.({ color: sym.color, fillColor: sym.color });
+
+      // --- APPLY highlight only if inside polygon ---
+      if (polygon && polygon.getBounds().contains(latlng) && map.hasLayer(marker)) {
+        marker.setStyle?.({ color: "#ffff00", fillColor: "#ffff00" });
         count++;
-      } else {
-        // reset color
-        const key = Object.keys(symbolMap).find(k =>
-          routeDayGroups[k]?.layers.includes(marker)
-        );
-        if (key) {
-          const sym = symbolMap[key];
-          marker.setStyle?.({ color: sym.color, fillColor: sym.color });
-        }
       }
     });
   });
