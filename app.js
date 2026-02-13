@@ -453,3 +453,5 @@ document.getElementById("closeSummary").onclick = () => {
   
   // ===== INITIAL DATA LOAD =====
   listFiles();
+
+}
